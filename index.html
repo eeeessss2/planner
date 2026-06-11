@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="허실장 플래너">
+<meta name="theme-color" content="#1D9E75">
+<link rel="manifest" href="manifest.json">
+<title>허실장 플래너</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#f5f0e8;--card:#fff;--border:#e8e0d0;--text:#2c2c2a;--text2:#888;--text3:#bbb;
+  --green:#1D9E75;--green-light:#e1f5ee;--green-mid:#5dcaa5;
+  --blue:#185FA5;--blue-light:#e6f1fb;
+  --amber:#c49200;--amber-light:#fff3c0;
+  --red:#e24b4a;--orange:#e07b00;
+  --brown:#5c3d1e;--brown2:#a07850;
+  --radius:10px;--radius-lg:14px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh;}
+
+/* 공통 */
+.hidden{display:none!important;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:var(--radius);padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-primary{background:var(--green);color:#fff;}
+.btn-primary:active{opacity:.85;}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text2);}
+.btn-ghost:active{background:var(--bg);}
+.btn-danger{background:#ffeaea;color:var(--red);border:1px solid #ffc8c8;}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;}
+.section-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+input,textarea{font-family:inherit;font-size:13px;color:var(--text);}
+input[type=text],input[type=number],textarea{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;width:100%;}
+input[type=text]:focus,input[type=number]:focus,textarea:focus{outline:none;border-color:var(--green);}
+textarea{resize:none;}
+
+/* 헤더 */
+.app-header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.header-left{display:flex;align-items:center;gap:8px;}
+.back-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text2);padding:2px 6px;}
+.header-title{font-size:16px;font-weight:700;color:var(--text);}
+.header-sub{font-size:11px;color:var(--text2);}
+
+/* 스크린 시스템 */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+
+/* ── 홈 스크린 ── */
+#screen-home{padding:16px;}
+.home-greeting{margin-bottom:16px;}
+.home-greeting h1{font-size:20px;font-weight:700;color:var(--text);}
+.home-greeting p{font-size:13px;color:var(--text2);margin-top:3px;}
+.project-list{display:flex;flex-direction:column;gap:10px;}
+.project-card{background:var(--card);border-radius:var(--radius-lg);border:1px solid var(--border);padding:14px 16px;cursor:pointer;position:relative;overflow:hidden;}
+.project-card:active{opacity:.9;}
+.project-card-accent{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;}
+.project-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
+.project-card-title{font-size:15px;font-weight:700;color:var(--text);}
+.project-card-type{font-size:10px;color:var(--text2);margin-top:2px;}
+.project-progress-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.project-progress-fill{height:100%;border-radius:3px;transition:width .3s;}
+.project-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);}
+.add-project-btn{background:var(--card);border:1.5px dashed var(--border);border-radius:var(--radius-lg);padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:600;width:100%;}
+.add-project-btn:active{background:var(--bg);}
+
+/* ── 프로젝트 상세 ── */
+#screen-detail{padding-bottom:80px;}
+.detail-tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:57px;z-index:90;}
+.detail-tab{flex:1;padding:11px 0;text-align:center;font-size:13px;font-weight:600;color:var(--text2);border-bottom:2px solid transparent;cursor:pointer;}
+.detail-tab.active{color:var(--green);border-bottom-color:var(--green);}
+
+/* 달력형 */
+.cal-wrap{padding:14px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.stat-box{background:var(--card);border-radius:var(--radius);padding:10px 6px;text-align:center;border:1px solid var(--border);}
+.stat-box .lbl{font-size:10px;color:var(--text2);margin-bottom:2px;}
+.stat-box .val{font-size:16px;font-weight:700;}
+.month-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.month-name{font-size:15px;font-weight:700;}
+.nav-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:14px;cursor:pointer;color:var(--text2);}
+.dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:4px;}
+.dow-cell{text-align:center;font-size:10px;font-weight:700;color:var(--text2);padding:3px 0;}
+.dow-cell.sun{color:var(--red);} .dow-cell.sat{color:var(--blue);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.day-cell{background:var(--card);border-radius:8px;border:1px solid var(--border);padding:5px 4px;min-height:64px;}
+.day-cell.empty{background:transparent;border-color:transparent;}
+.day-cell.today{border:2px solid var(--blue);}
+.day-cell.done{background:var(--green-light);border-color:var(--green-mid);}
+.day-cell.rest-day{background:#f8f5ef;}
+.day-num{font-size:11px;font-weight:700;margin-bottom:2px;}
+.day-num.sun{color:var(--red);} .day-num.sat{color:var(--blue);}
+.day-chip{font-size:9px;border-radius:4px;padding:2px 4px;margin-bottom:2px;display:block;line-height:1.4;}
+.day-chip.lesson{background:var(--blue-light);color:var(--blue);}
+.day-chip.rest{background:#f1efe8;color:#888;}
+.day-chip.mins{color:var(--green);font-weight:700;background:none;padding:0;}
+.check-wrap{margin-top:3px;display:flex;align-items:center;gap:3px;}
+.check-wrap input[type=checkbox]{width:13px;height:13px;accent-color:var(--green);}
+.check-wrap label{font-size:9px;color:var(--text2);}
+.progress-card{background:var(--card);border-radius:var(--radius);padding:12px 14px;border:1px solid var(--border);margin-top:14px;}
+.progress-label-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px;}
+.progress-bg{height:10px;background:var(--bg);border-radius:5px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:5px;transition:width .4s;}
+.legend-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
+.leg-dot{width:11px;height:11px;border-radius:3px;}
+
+/* 트래커형 */
+.tracker-wrap{padding:14px;}
+.tracker-hero{background:var(--card);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px;border:1px solid var(--border);text-align:center;}
+.tracker-hero-title{font-size:16px;font-weight:700;color:var(--brown);margin-bottom:2px;}
+.tracker-hero-sub{font-size:12px;color:var(--brown2);}
+.days-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;}
+.days-scroll::-webkit-scrollbar{height:3px;}
+.days-scroll::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px;}
+.day-card{min-width:74px;background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);padding:8px 6px;text-align:center;flex-shrink:0;}
+.day-card.today-card{border-color:#f5c842;background:#fffbee;}
+.day-card.done-card{background:var(--green-light);border-color:var(--green-mid);}
+.day-card-label{font-size:10px;color:var(--brown2);margin-bottom:4px;font-weight:600;}
+.day-card-mins{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:5px;}
+.day-card-mins input{width:40px;height:26px;border:1px solid var(--border);border-radius:6px;text-align:center;font-size:12px;font-weight:700;background:#faf7f0;padding:0;}
+.day-card-mins span{font-size:10px;color:var(--text2);}
+.day-card-checks{display:flex;justify-content:center;gap:6px;}
+.day-card-checks label{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:9px;color:var(--text2);}
+.day-card-checks input{accent-color:#f5c842;width:12px;height:12px;}
+.thermo-section{background:var(--card);border-radius:var(--radius-lg);padding:14px;border:1px solid var(--border);}
+.thermo-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-align:center;}
+.thermo-row{display:flex;gap:12px;align-items:flex-start;}
+.thermo-ticks{display:flex;flex-direction:column;justify-content:space-between;height:130px;padding:2px 0;}
+.thermo-ticks span{font-size:9px;color:var(--brown2);}
+.thermo-tube{width:26px;height:130px;border-radius:13px;background:#f0ece4;border:1.5px solid #d4b483;position:relative;overflow:hidden;}
+.thermo-tube-fill{position:absolute;bottom:0;left:0;right:0;background:#f5c842;transition:height .5s;}
+.thermo-total-val{font-size:20px;font-weight:700;color:var(--brown);margin-top:4px;}
+.rewards-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+.reward-row{display:flex;align-items:center;gap:6px;background:#faf7f0;border:1px solid #e8d8b0;border-radius:8px;padding:6px 8px;}
+.reward-row.achieved{background:var(--amber-light);border-color:var(--amber);}
+.reward-mins{font-size:12px;font-weight:700;color:#8a6030;min-width:30px;}
+.reward-text{font-size:11px;color:var(--brown);flex:1;}
+.reward-cb{width:14px;height:14px;accent-color:var(--amber);}
+.mission-section{background:var(--card);border-radius:var(--radius-lg);padding:14px;border:1px solid var(--border);margin-top:10px;}
+.mission-count{font-size:14px;font-weight:700;color:var(--orange);margin-bottom:8px;}
+.mission-dots{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+.mdot{width:16px;height:16px;border-radius:50%;background:#e8d8b0;}
+.mdot.done{background:#f5c842;}
+.memo-section{margin-top:10px;}
+.memo-area{width:100%;border:1.5px solid var(--border);border-radius:var(--radius);background:#faf7f0;font-size:12px;padding:8px;font-family:inherit;color:var(--brown);min-height:64px;}
+.copy-btn{width:100%;padding:11px;border-radius:24px;background:#faf7f0;border:1.5px solid var(--border);font-size:13px;color:#7a5230;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit;}
+
+/* 체크리스트형 */
+.checklist-wrap{padding:14px;}
+.checklist-item{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.checklist-item.done-item{background:var(--green-light);}
+.checklist-cb{width:20px;height:20px;accent-color:var(--green);flex-shrink:0;}
+.checklist-text{flex:1;font-size:13px;}
+.checklist-text.done-text{text-decoration:line-through;color:var(--text2);}
+.checklist-del{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 4px;}
+.add-item-row{display:flex;gap:8px;margin-top:4px;}
+.add-item-row input{flex:1;}
+
+/* ── 설정 스크린 ── */
+#screen-settings{padding:16px 16px 80px;}
+.settings-section{background:var(--card);border-radius:var(--radius-lg);border:1px solid var(--border);margin-bottom:14px;overflow:hidden;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-label{font-size:13px;font-weight:600;color:var(--text);}
+.settings-row-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.settings-row-right{font-size:13px;color:var(--text2);}
+.settings-row-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;}
+
+/* ── 모달 ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-height:90vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;}
+.modal-field{margin-bottom:14px;}
+.modal-field label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px;}
+.modal-actions{display:flex;gap:8px;margin-top:16px;}
+.modal-actions .btn{flex:1;padding:12px;}
+.type-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.type-option{border:1.5px solid var(--border);border-radius:var(--radius);padding:10px 8px;text-align:center;cursor:pointer;}
+.type-option.selected{border-color:var(--green);background:var(--green-light);}
+.type-option .type-icon{font-size:20px;margin-bottom:4px;}
+.type-option .type-name{font-size:11px;font-weight:600;color:var(--text);}
+
+/* ── 바텀 탭 ── */
+.bottom-tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.bottom-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0;cursor:pointer;gap:3px;}
+.bottom-tab.active .bt-icon{color:var(--green);}
+.bottom-tab.active .bt-label{color:var(--green);}
+.bt-icon{font-size:20px;color:var(--text2);}
+.bt-label{font-size:10px;font-weight:600;color:var(--text2);}
+
+/* 달력 편집 */
+.cal-edit-list{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.cal-edit-row{background:var(--bg);border-radius:var(--radius);padding:8px 10px;display:flex;align-items:center;gap:8px;}
+.cal-edit-date{font-size:11px;font-weight:700;color:var(--text2);min-width:40px;}
+.cal-edit-input{flex:1;font-size:12px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 8px;}
+.cal-edit-mins{width:48px;font-size:12px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 6px;text-align:center;}
+.cal-edit-rest{font-size:11px;display:flex;align-items:center;gap:4px;color:var(--text2);}
+</style>
+</head>
+<body>
+
+<!-- 앱 헤더 -->
+<div class="app-header" id="appHeader">
+  <div class="header-left">
+    <button class="back-btn hidden" id="backBtn" onclick="goHome()">&#8249;</button>
+    <div>
+      <div class="header-title" id="headerTitle">허실장 플래너</div>
+      <div class="header-sub" id="headerSub">오늘도 한 걸음씩 💪</div>
+    </div>
+  </div>
+  <div id="headerActions"></div>
+</div>
+
+<!-- 스크린들 -->
+<div class="screen active" id="screen-home">
+  <div style="padding:16px 16px 80px;">
+    <div class="home-greeting">
+      <h1 id="greetingText">안녕하세요, 허실장님! 👋</h1>
+      <p id="greetingDate"></p>
+    </div>
+    <div class="section-title">진행 중인 프로젝트</div>
+    <div class="project-list" id="projectList"></div>
+    <div style="height:12px;"></div>
+    <button class="add-project-btn" onclick="openAddProject()">
+      <span style="font-size:20px;">＋</span> 새 프로젝트 추가
+    </button>
+  </div>
+</div>
+
+<div class="screen" id="screen-detail">
+  <div class="detail-tabs" id="detailTabs"></div>
+  <div id="detailContent"></div>
+</div>
+
+<div class="screen" id="screen-settings">
+  <div class="section-title">앱 설정</div>
+  <div class="settings-section">
+    <div class="settings-row">
+      <div><div class="settings-row-label">내 이름</div><div class="settings-row-sub">헤더에 표시되는 이름</div></div>
+      <input type="text" id="settingName" style="width:120px;text-align:right;background:transparent;border:none;font-size:13px;color:var(--text);" value="허실장" onchange="saveSetting('name',this.value);updateGreeting();">
+    </div>
+    <div class="settings-row" onclick="openResetModal()">
+      <div><div class="settings-row-label" style="color:var(--red);">전체 데이터 초기화</div><div class="settings-row-sub">모든 기록이 삭제됩니다</div></div>
+      <span class="settings-row-right">›</span>
+    </div>
+  </div>
+  <div class="section-title">프로젝트 관리</div>
+  <div id="settingsProjectList"></div>
+</div>
+
+<!-- 바텀 탭 -->
+<div class="bottom-tabs" id="bottomTabs">
+  <div class="bottom-tab active" onclick="showScreen('home')" id="btHome">
+    <div class="bt-icon">🏠</div><div class="bt-label">홈</div>
+  </div>
+  <div class="bottom-tab" onclick="showScreen('settings')" id="btSettings">
+    <div class="bt-icon">⚙️</div><div class="bt-label">설정</div>
+  </div>
+</div>
+
+<!-- 모달: 프로젝트 추가/편집 -->
+<div class="modal-overlay" id="modalProject">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalProjectTitle">새 프로젝트</div>
+    <div class="modal-field">
+      <label>프로젝트 이름</label>
+      <input type="text" id="mp-name" placeholder="예: 릴스 강의 완주">
+    </div>
+    <div class="modal-field">
+      <label>유형 선택</label>
+      <div class="type-selector">
+        <div class="type-option selected" data-type="calendar" onclick="selectType('calendar')">
+          <div class="type-icon">📅</div><div class="type-name">달력형</div>
+        </div>
+        <div class="type-option" data-type="tracker" onclick="selectType('tracker')">
+          <div class="type-icon">🔥</div><div class="type-name">10일 트래커</div>
+        </div>
+        <div class="type-option" data-type="checklist" onclick="selectType('checklist')">
+          <div class="type-icon">✅</div><div class="type-name">체크리스트</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>색상 테마</label>
+      <div style="display:flex;gap:8px;">
+        <div class="color-opt" data-color="#1D9E75" onclick="selectColor('#1D9E75')" style="width:28px;height:28px;border-radius:50%;background:#1D9E75;border:3px solid #1D9E75;cursor:pointer;"></div>
+        <div class="color-opt" data-color="#185FA5" onclick="selectColor('#185FA5')" style="width:28px;height:28px;border-radius:50%;background:#185FA5;border:3px solid transparent;cursor:pointer;"></div>
+        <div class="color-opt" data-color="#c49200" onclick="selectColor('#c49200')" style="width:28px;height:28px;border-radius:50%;background:#c49200;border:3px solid transparent;cursor:pointer;"></div>
+        <div class="color-opt" data-color="#993C1D" onclick="selectColor('#993C1D')" style="width:28px;height:28px;border-radius:50%;background:#993C1D;border:3px solid transparent;cursor:pointer;"></div>
+        <div class="color-opt" data-color="#534AB7" onclick="selectColor('#534AB7')" style="width:28px;height:28px;border-radius:50%;background:#534AB7;border:3px solid transparent;cursor:pointer;"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalProject')">취소</button>
+      <button class="btn btn-primary" onclick="saveProject()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 모달: 달력 일정 편집 -->
+<div class="modal-overlay" id="modalCalEdit">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">달력 일정 편집</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">날짜를 탭해서 수정하세요. 빈칸으로 두면 빈 날로 처리돼요.</div>
+    <div id="calEditList" class="cal-edit-list"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeModal('modalCalEdit')">닫기</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="saveCalEdit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 모달: 리워드 편집 -->
+<div class="modal-overlay" id="modalRewards">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">리워드 목표 편집</div>
+    <div id="rewardEditList" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" style="width:100%;" onclick="saveRewards()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 모달: 10일 시작일 편집 -->
+<div class="modal-overlay" id="modalTrackerEdit">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">트래커 설정</div>
+    <div class="modal-field">
+      <label>시작 날짜</label>
+      <input type="date" id="te-startDate" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:8px 10px;font-size:13px;">
+    </div>
+    <div class="modal-field">
+      <label>트래커 제목</label>
+      <input type="text" id="te-title" placeholder="예: 작심10일 공부방">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalTrackerEdit')">취소</button>
+      <button class="btn btn-primary" onclick="saveTrackerEdit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 모달: 리셋 확인 -->
+<div class="modal-overlay" id="modalReset">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="color:var(--red);">⚠️ 전체 초기화</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">모든 프로젝트와 기록이 삭제됩니다. 정말 초기화할까요?</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalReset')">취소</button>
+      <button class="btn btn-danger" onclick="resetAll()">초기화</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════
+// 데이터 레이어
+// ══════════════════════════════
+function load(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+
+let settings = load('planner_settings',{name:'허실장'});
+let projects = load('planner_projects', null);
+
+if(!projects){
+  projects = [
+    {
+      id:'rls_2026',
+      name:'릴스 강의 완주',
+      type:'calendar',
+      color:'#185FA5',
+      createdAt:'2026-06-11',
+      data:{
+        checked:{},
+        schedule:{
+          "2026-06-11":{lesson:"잘 터진 콘텐츠 분석법",ch:"Ch.1",mins:17},
+          "2026-06-12":{lesson:"18가지 릴스 공식",ch:"Ch.1",mins:23},
+          "2026-06-13":{lesson:"업로드 기초 + 제작법",ch:"Ch.1",mins:15},
+          "2026-06-14":{lesson:"알고리즘 핵심 2강",ch:"Ch.2",mins:20},
+          "2026-06-15":{rest:true},
+          "2026-06-16":{lesson:"분석법 + 지식콘텐츠(1)",ch:"Ch.3",mins:25},
+          "2026-06-17":{lesson:"지식콘텐츠(2) + 커머스",ch:"Ch.3",mins:27},
+          "2026-06-18":{lesson:"오프라인 서비스업(1)(2)",ch:"Ch.3",mins:27},
+          "2026-06-19":{lesson:"초보 실수 + 대박 찾는 법",ch:"Ch.4",mins:24},
+          "2026-06-20":{rest:true},
+          "2026-06-21":{lesson:"대박 적용법 (1)(2)",ch:"Ch.4",mins:23},
+          "2026-06-22":{lesson:"프리미어 프로 기초",ch:"Ch.5",mins:17},
+          "2026-06-23":{lesson:"메타광고 + 캡컷 기초",ch:"Ch.5",mins:21},
+          "2026-06-24":{lesson:"캡컷 심화편",ch:"Ch.5",mins:31},
+          "2026-06-25":{lesson:"AI 편집 + 꿀팁",ch:"Ch.5",mins:31},
+          "2026-06-26":{lesson:"주제선정 + 표본이론(1)",ch:"Ch.6",mins:21},
+          "2026-06-27":{rest:true},
+          "2026-06-28":{lesson:"표본이론(2)",ch:"Ch.6",mins:29},
+          "2026-06-29":{lesson:"콘텐츠전략 + 셀링포인트",ch:"Ch.6",mins:31},
+          "2026-06-30":{lesson:"도입부 3초 (1)(2)(3)",ch:"Ch.6",mins:34},
+          "2026-07-01":{lesson:"대본구성법 7단계",ch:"Ch.6",mins:23},
+          "2026-07-02":{lesson:"캡션 + CTA 공식",ch:"Ch.6",mins:17},
+          "2026-07-03":{lesson:"프로필 세팅 전체",ch:"Ch.7",mins:49},
+          "2026-07-04":{rest:true},
+          "2026-07-05":{lesson:"AI 카피·대본·피드백 봇",ch:"Ch.8",mins:28},
+        }
+      }
+    },
+    {
+      id:'tracker_2026',
+      name:'작심10일 공부방',
+      type:'tracker',
+      color:'#c49200',
+      createdAt:'2026-06-11',
+      data:{
+        startDate:'2026-06-11',
+        title:'작심10일 공부방 정리',
+        minutes:Array(10).fill(0),
+        am:Array(10).fill(false),
+        cert:Array(10).fill(false),
+        memos:Array(10).fill(''),
+        rewards:[
+          {mins:150,icon:'🎉',label:'미션 완료!'},
+          {mins:300,icon:'☕',label:'비싼 커피 한 잔'},
+          {mins:450,icon:'🍰',label:'먹고 싶던 디저트'},
+          {mins:600,icon:'⏰',label:'2시간 자유시간'},
+        ]
+      }
+    }
+  ];
+  save('planner_projects', projects);
+}
+
+function saveProjects(){save('planner_projects',projects);}
+function saveSetting(k,v){settings[k]=v;save('planner_settings',settings);}
+
+// ══════════════════════════════
+// 네비게이션
+// ══════════════════════════════
+let currentScreen='home';
+let currentProjectId=null;
+let currentCalMonth={y:2026,m:6};
+let currentTrackerDay=0;
+let editingProjectId=null;
+
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  currentScreen=name;
+  document.getElementById('backBtn').classList.toggle('hidden', name==='home'||name==='settings');
+  document.getElementById('btHome').classList.toggle('active', name==='home');
+  document.getElementById('btSettings').classList.toggle('active', name==='settings');
+  if(name==='home'){
+    document.getElementById('headerTitle').textContent='허실장 플래너';
+    document.getElementById('headerSub').textContent='오늘도 한 걸음씩 💪';
+    document.getElementById('headerActions').innerHTML='';
+    renderHome();
+  }
+  if(name==='settings') renderSettingsPage();
+}
+
+function goHome(){showScreen('home');}
+
+function openProject(id){
+  currentProjectId=id;
+  const p=projects.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('headerTitle').textContent=p.name;
+  document.getElementById('headerSub').textContent=typeLabel(p.type);
+  document.getElementById('backBtn').classList.remove('hidden');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-detail').classList.add('active');
+  currentScreen='detail';
+  renderDetail(p);
+}
+
+function typeLabel(t){return t==='calendar'?'📅 달력형':t==='tracker'?'🔥 10일 트래커':'✅ 체크리스트';}
+
+// ══════════════════════════════
+// 홈 렌더
+// ══════════════════════════════
+function updateGreeting(){
+  const name=settings.name||'허실장';
+  document.getElementById('greetingText').textContent='안녕하세요, '+name+'님! 👋';
+  const d=new Date(2026,5,11);
+  const days=['일','월','화','수','목','금','토'];
+  document.getElementById('greetingDate').textContent=
+    '2026년 6월 11일 ('+days[d.getDay()]+'요일)';
+}
+
+function renderHome(){
+  updateGreeting();
+  const list=document.getElementById('projectList');
+  list.innerHTML='';
+  projects.forEach(p=>{
+    const {done,total,pct}=getProgress(p);
+    const card=document.createElement('div');
+    card.className='project-card';
+    card.onclick=()=>openProject(p.id);
+    card.innerHTML=`
+      <div class="project-card-accent" style="background:${p.color};"></div>
+      <div style="padding-left:8px;">
+        <div class="project-card-header">
+          <div>
+            <div class="project-card-title">${p.name}</div>
+            <div class="project-card-type">${typeLabel(p.type)}</div>
+          </div>
+          <div style="font-size:18px;font-weight:700;color:${p.color};">${pct}%</div>
+        </div>
+        <div class="project-progress-bar">
+          <div class="project-progress-fill" style="width:${pct}%;background:${p.color};"></div>
+        </div>
+        <div class="project-meta">
+          <span>${done} / ${total} 완료</span>
+          <span>${getStatusText(p)}</span>
+        </div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function getProgress(p){
+  if(p.type==='calendar'){
+    const sched=p.data.schedule||{};
+    const total=Object.values(sched).filter(v=>!v.rest).length;
+    const done=Object.keys(p.data.checked||{}).filter(k=>p.data.checked[k]&&sched[k]&&!sched[k].rest).length;
+    return {done,total,pct:total?Math.round(done/total*100):0};
+  }
+  if(p.type==='tracker'){
+    const total=10;
+    const done=(p.data.minutes||[]).filter((m,i)=>m>=15&&(p.data.cert||[])[i]).length;
+    return {done,total,pct:Math.round(done/total*100)};
+  }
+  if(p.type==='checklist'){
+    const items=p.data.items||[];
+    const total=items.length;
+    const done=items.filter(it=>it.done).length;
+    return {done,total,pct:total?Math.round(done/total*100):0};
+  }
+  return {done:0,total:0,pct:0};
+}
+
+function getStatusText(p){
+  if(p.type==='calendar'){
+    const keys=Object.keys(p.data.schedule||{}).filter(k=>!p.data.schedule[k].rest).sort();
+    const left=keys.filter(k=>!p.data.checked||!p.data.checked[k]);
+    return left.length>0?'D-'+left.length+'일 남음':'완주! 🎉';
+  }
+  if(p.type==='tracker'){
+    const d=new Date(p.data.startDate||new Date());
+    const end=new Date(d);end.setDate(d.getDate()+9);
+    return end.toLocaleDateString('ko-KR',{month:'short',day:'numeric'})+'까지';
+  }
+  return '';
+}
+
+// ══════════════════════════════
+// 상세 렌더
+// ══════════════════════════════
+function renderDetail(p){
+  const tabs=document.getElementById('detailTabs');
+  const content=document.getElementById('detailContent');
+  tabs.innerHTML='';
+  content.innerHTML='';
+
+  if(p.type==='calendar'){
+    const tabNames=[['일정','cal-main'],['편집','cal-edit']];
+    tabNames.forEach(([name,id],i)=>{
+      const t=document.createElement('div');
+      t.className='detail-tab'+(i===0?' active':'');
+      t.textContent=name;
+      t.onclick=()=>{
+        document.querySelectorAll('.detail-tab').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        document.querySelectorAll('.detail-panel').forEach(x=>x.classList.add('hidden'));
+        document.getElementById('dp-'+id).classList.remove('hidden');
+      };
+      tabs.appendChild(t);
+    });
+    content.innerHTML=`<div id="dp-cal-main" class="detail-panel cal-wrap"></div><div id="dp-cal-edit" class="detail-panel hidden" style="padding:14px;"></div>`;
+    renderCalMain(p);
+    renderCalEditPanel(p);
+    // 헤더 액션
+    document.getElementById('headerActions').innerHTML='';
+  } else if(p.type==='tracker'){
+    const tabNames=[['트래커','tracker-main'],['설정','tracker-set']];
+    tabNames.forEach(([name,id],i)=>{
+      const t=document.createElement('div');
+      t.className='detail-tab'+(i===0?' active':'');
+      t.textContent=name;
+      t.onclick=()=>{
+        document.querySelectorAll('.detail-tab').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        document.querySelectorAll('.detail-panel').forEach(x=>x.classList.add('hidden'));
+        document.getElementById('dp-'+id).classList.remove('hidden');
+        if(id==='tracker-set') renderTrackerSettings(p);
+      };
+      tabs.appendChild(t);
+    });
+    content.innerHTML=`<div id="dp-tracker-main" class="detail-panel tracker-wrap"></div><div id="dp-tracker-set" class="detail-panel hidden" style="padding:14px;"></div>`;
+    renderTrackerMain(p);
+    document.getElementById('headerActions').innerHTML='';
+  } else if(p.type==='checklist'){
+    tabs.innerHTML='';
+    content.innerHTML=`<div class="checklist-wrap" id="dp-checklist-main"></div>`;
+    renderChecklist(p);
+    document.getElementById('headerActions').innerHTML='';
+  }
+}
+
+// ── 달력 메인 ──
+function renderCalMain(p){
+  const wrap=document.getElementById('dp-cal-main');
+  wrap.innerHTML='';
+  const sched=p.data.schedule||{};
+  const checked=p.data.checked||{};
+  const totalDays=Object.values(sched).filter(v=>!v.rest).length;
+  const doneDays=Object.keys(checked).filter(k=>checked[k]&&sched[k]&&!sched[k].rest).length;
+  const pct=totalDays?Math.round(doneDays/totalDays*100):0;
+
+  wrap.innerHTML=`
+    <div class="stats-row">
+      <div class="stat-box"><div class="lbl">총 강의일</div><div class="val">${totalDays}일</div></div>
+      <div class="stat-box"><div class="lbl">완료</div><div class="val" style="color:var(--green);">${doneDays}일</div></div>
+      <div class="stat-box"><div class="lbl">남은일</div><div class="val">${totalDays-doneDays}일</div></div>
+      <div class="stat-box"><div class="lbl">진행률</div><div class="val" style="color:${p.color};">${pct}%</div></div>
+    </div>
+    <div class="month-nav-row">
+      <div class="month-name" id="calMonthName"></div>
+      <div style="display:flex;gap:6px;">
+        <button class="nav-btn" onclick="calChangeMonth(-1,'${p.id}')">◀</button>
+        <button class="nav-btn" onclick="calChangeMonth(1,'${p.id}')">▶</button>
+      </div>
+    </div>
+    <div class="dow-row">
+      <div class="dow-cell sun">일</div><div class="dow-cell">월</div><div class="dow-cell">화</div>
+      <div class="dow-cell">수</div><div class="dow-cell">목</div><div class="dow-cell">금</div>
+      <div class="dow-cell sat">토</div>
+    </div>
+    <div class="cal-grid" id="calGrid_${p.id}"></div>
+    <div class="progress-card">
+      <div class="progress-label-row"><span>완주 진행률</span><span>${doneDays} / ${totalDays}</span></div>
+      <div class="progress-bg"><div class="progress-fill" id="calProgFill_${p.id}" style="width:${pct}%;background:${p.color};"></div></div>
+    </div>
+    <div class="legend-row">
+      <div class="leg-item"><div class="leg-dot" style="background:var(--green-light);border:1px solid var(--green-mid);"></div>완료</div>
+      <div class="leg-item"><div class="leg-dot" style="background:var(--blue-light);"></div>강의일</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#f8f5ef;"></div>휴식일</div>
+    </div>`;
+  renderCalGrid(p);
+}
+
+function toKey(y,m,d){return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+
+function renderCalGrid(p){
+  const grid=document.getElementById('calGrid_'+p.id);
+  if(!grid)return;
+  grid.innerHTML='';
+  const mn=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const el=document.getElementById('calMonthName');
+  if(el) el.textContent=currentCalMonth.y+'년 '+mn[currentCalMonth.m-1];
+  const {y,m}=currentCalMonth;
+  const firstDow=new Date(y,m-1,1).getDay();
+  const dim=new Date(y,m,0).getDate();
+  const sched=p.data.schedule||{};
+  const checked=p.data.checked||{};
+
+  for(let i=0;i<firstDow;i++){const e=document.createElement('div');e.className='day-cell empty';grid.appendChild(e);}
+  for(let d=1;d<=dim;d++){
+    const key=toKey(y,m,d);
+    const s=sched[key];
+    const dow=new Date(y,m-1,d).getDay();
+    const isDone=!!checked[key];
+    const cell=document.createElement('div');
+    cell.className='day-cell'+(isDone?' done':s&&s.rest?' rest-day':'');
+    const dn=document.createElement('div');
+    dn.className='day-num'+(dow===0?' sun':dow===6?' sat':'');
+    dn.textContent=d;
+    cell.appendChild(dn);
+    if(s&&!s.rest){
+      const c1=document.createElement('span');c1.className='day-chip lesson';c1.textContent=s.ch||'';cell.appendChild(c1);
+      const c2=document.createElement('span');c2.className='day-chip mins';c2.textContent='~'+s.mins+'분';cell.appendChild(c2);
+      const cw=document.createElement('div');cw.className='check-wrap';
+      const cb=document.createElement('input');cb.type='checkbox';cb.checked=isDone;
+      cb.onchange=()=>{
+        if(!p.data.checked)p.data.checked={};
+        if(cb.checked)p.data.checked[key]=true; else delete p.data.checked[key];
+        saveProjects();
+        cell.className='day-cell'+(cb.checked?' done':'');
+        updateCalStats(p);
+      };
+      const lbl=document.createElement('label');lbl.textContent='완료';
+      cw.append(cb,lbl);cell.appendChild(cw);
+    } else if(s&&s.rest){
+      const c=document.createElement('span');c.className='day-chip rest';c.textContent='휴식';cell.appendChild(c);
+    }
+    grid.appendChild(cell);
+  }
+}
+
+function updateCalStats(p){
+  const sched=p.data.schedule||{};
+  const checked=p.data.checked||{};
+  const total=Object.values(sched).filter(v=>!v.rest).length;
+  const done=Object.keys(checked).filter(k=>checked[k]&&sched[k]&&!sched[k].rest).length;
+  const pct=total?Math.round(done/total*100):0;
+  const fill=document.getElementById('calProgFill_'+p.id);
+  if(fill)fill.style.width=pct+'%';
+  const stats=document.querySelectorAll('#dp-cal-main .stat-box .val');
+  if(stats[1])stats[1].textContent=done+'일';
+  if(stats[2])stats[2].textContent=(total-done)+'일';
+  if(stats[3])stats[3].textContent=pct+'%';
+}
+
+function calChangeMonth(dir,pid){
+  currentCalMonth.m+=dir;
+  if(currentCalMonth.m>12){currentCalMonth.m=1;currentCalMonth.y++;}
+  if(currentCalMonth.m<1){currentCalMonth.m=12;currentCalMonth.y--;}
+  const p=projects.find(x=>x.id===pid);
+  if(p)renderCalGrid(p);
+}
+
+// ── 달력 편집 패널 ──
+function renderCalEditPanel(p){
+  const wrap=document.getElementById('dp-cal-edit');
+  if(!wrap)return;
+  const sched=p.data.schedule||{};
+  const keys=Object.keys(sched).sort();
+  let html=`<div class="section-title">일정 편집</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">각 날짜의 강의명, 시간(분), 휴식 여부를 수정할 수 있어요.</div>
+  <div id="calEditRows_${p.id}" class="cal-edit-list">`;
+  keys.forEach(k=>{
+    const s=sched[k];
+    const isRest=!!s.rest;
+    html+=`<div class="cal-edit-row" data-key="${k}">
+      <span class="cal-edit-date">${k.slice(5)}</span>
+      <input class="cal-edit-input" type="text" value="${isRest?'':s.lesson||''}" placeholder="강의명" ${isRest?'disabled':''} id="ce_lesson_${k}">
+      <input class="cal-edit-mins" type="number" value="${isRest?'':s.mins||0}" min="0" max="999" ${isRest?'disabled':''} id="ce_mins_${k}">
+      <label class="cal-edit-rest"><input type="checkbox" ${isRest?'checked':''} onchange="toggleRestRow(this,'${k}','${p.id}')"> 휴식</label>
+    </div>`;
+  });
+  html+=`</div>
+  <div style="display:flex;gap:8px;margin-top:14px;">
+    <button class="btn btn-ghost" style="flex:1;" onclick="addCalRow('${p.id}')">+ 날짜 추가</button>
+    <button class="btn btn-primary" style="flex:1;" onclick="saveCalEditPanel('${p.id}')">저장</button>
+  </div>`;
+  wrap.innerHTML=html;
+}
+
+function toggleRestRow(cb,key,pid){
+  const lesson=document.getElementById('ce_lesson_'+key);
+  const mins=document.getElementById('ce_mins_'+key);
+  if(lesson)lesson.disabled=cb.checked;
+  if(mins)mins.disabled=cb.checked;
+}
+
+function addCalRow(pid){
+  const p=projects.find(x=>x.id===pid);if(!p)return;
+  const keys=Object.keys(p.data.schedule||{}).sort();
+  const last=keys[keys.length-1];
+  let nextDate=new Date();
+  if(last){const[y,m,d]=last.split('-').map(Number);nextDate=new Date(y,m-1,d+1);}
+  const nk=toKey(nextDate.getFullYear(),nextDate.getMonth()+1,nextDate.getDate());
+  if(!p.data.schedule[nk]) p.data.schedule[nk]={lesson:'새 강의',ch:'',mins:30};
+  saveProjects();
+  renderCalEditPanel(p);
+}
+
+function saveCalEditPanel(pid){
+  const p=projects.find(x=>x.id===pid);if(!p)return;
+  const keys=Object.keys(p.data.schedule||{}).sort();
+  keys.forEach(k=>{
+    const restCb=document.querySelector(`[data-key="${k}"] input[type=checkbox]`);
+    const isRest=restCb&&restCb.checked;
+    if(isRest){p.data.schedule[k]={rest:true};return;}
+    const lesson=document.getElementById('ce_lesson_'+k);
+    const mins=document.getElementById('ce_mins_'+k);
+    const ch=p.data.schedule[k].ch||'';
+    p.data.schedule[k]={lesson:lesson?lesson.value:'',ch,mins:parseInt(mins?mins.value:0)||0};
+  });
+  saveProjects();
+  renderCalMain(p);
+  alert('저장됐어요! ✅');
+}
+
+// ── 트래커 메인 ──
+function renderTrackerMain(p){
+  const wrap=document.getElementById('dp-tracker-main');
+  if(!wrap)return;
+  const start=new Date(p.data.startDate||'2026-06-11');
+  const end=new Date(start);end.setDate(start.getDate()+9);
+  const fmt=d=>(d.getMonth()+1)+'/'+d.getDate();
+
+  wrap.innerHTML=`
+    <div class="tracker-hero">
+      <div class="tracker-hero-title">${p.data.title||p.name}</div>
+      <div class="tracker-hero-sub">${fmt(start)} ~ ${fmt(end)} (10일)</div>
+    </div>
+    <div class="section-title">일별 정리 기록</div>
+    <div class="days-scroll" id="tDaysScroll_${p.id}"></div>
+    <div class="thermo-section">
+      <div class="thermo-title">실시간 누적 시간 (분)</div>
+      <div class="thermo-row">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div class="thermo-ticks"><span>600</span><span>450</span><span>300</span><span>150</span><span>0</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="thermo-tube"><div class="thermo-tube-fill" id="tFill_${p.id}"></div></div>
+          <div class="thermo-total-val" id="tTotal_${p.id}">0</div>
+        </div>
+        <div class="rewards-col" id="tRewards_${p.id}"></div>
+      </div>
+    </div>
+    <div class="mission-section">
+      <div class="mission-count" id="tMcount_${p.id}">10일 미션 진행 0 / 10</div>
+      <div class="mission-dots" id="tDots_${p.id}"></div>
+      <div id="tStatus_${p.id}" style="font-size:12px;color:var(--brown2);"></div>
+      <div class="memo-section">
+        <div class="section-title" style="margin-top:10px;">오늘 정리한 내역</div>
+        <textarea class="memo-area" id="tMemo_${p.id}" placeholder="오늘 정리한 내용..." rows="3"></textarea>
+      </div>
+      <button class="copy-btn" onclick="copyTrackerRecord('${p.id}')">📤 오늘 기록 텍스트 복사</button>
+    </div>`;
+
+  buildTrackerDays(p);
+  updateTrackerStats(p);
+  loadTrackerMemo(p);
+
+  document.getElementById('tMemo_'+p.id).oninput=function(){
+    p.data.memos[currentTrackerDay]=this.value;
+    saveProjects();
+  };
+}
+
+function buildTrackerDays(p){
+  const scroll=document.getElementById('tDaysScroll_'+p.id);
+  if(!scroll)return;
+  scroll.innerHTML='';
+  const start=new Date(p.data.startDate||'2026-06-11');
+  for(let i=0;i<10;i++){
+    const d=new Date(start);d.setDate(start.getDate()+i);
+    const isDone=(p.data.minutes[i]||0)>=15&&(p.data.cert||[])[i];
+    const isToday=(i===0);
+    const card=document.createElement('div');
+    card.className='day-card'+(isToday?' today-card':'')+(isDone?' done-card':'');
+    card.id='tCard_'+p.id+'_'+i;
+
+    const lbl=document.createElement('div');lbl.className='day-card-label';
+    lbl.textContent=(d.getMonth()+1)+'/'+d.getDate()+(isToday?' 오늘':'');
+    card.appendChild(lbl);
+
+    const mr=document.createElement('div');mr.className='day-card-mins';
+    const inp=document.createElement('input');inp.type='number';inp.min=0;inp.max=999;
+    inp.value=p.data.minutes[i]||0;
+    inp.oninput=()=>{p.data.minutes[i]=parseInt(inp.value)||0;saveProjects();updateTrackerStats(p);refreshTrackerCard(p,i);};
+    const sp=document.createElement('span');sp.textContent='분';
+    mr.append(inp,sp);card.appendChild(mr);
+
+    const ch=document.createElement('div');ch.className='day-card-checks';
+    [['오전',i+'_am'],['인증',i+'_cert']].forEach(([txt,id],ci)=>{
+      const wrap=document.createElement('label');
+      const cb=document.createElement('input');cb.type='checkbox';
+      cb.checked=ci===0?(p.data.am||[])[i]:(p.data.cert||[])[i];
+      cb.onchange=()=>{
+        if(ci===0){if(!p.data.am)p.data.am=Array(10).fill(false);p.data.am[i]=cb.checked;}
+        else{if(!p.data.cert)p.data.cert=Array(10).fill(false);p.data.cert[i]=cb.checked;}
+        saveProjects();updateTrackerStats(p);refreshTrackerCard(p,i);
+      };
+      const t=document.createElement('span');t.textContent=txt;
+      wrap.append(cb,t);ch.appendChild(wrap);
+    });
+    card.appendChild(ch);
+    card.addEventListener('click',e=>{if(e.target.tagName!=='INPUT'){currentTrackerDay=i;loadTrackerMemo(p);}});
+    scroll.appendChild(card);
+  }
+}
+
+function refreshTrackerCard(p,i){
+  const card=document.getElementById('tCard_'+p.id+'_'+i);
+  if(!card)return;
+  const isDone=(p.data.minutes[i]||0)>=15&&(p.data.cert||[])[i];
+  const isToday=(i===0);
+  card.className='day-card'+(isToday?' today-card':'')+(isDone?' done-card':'');
+}
+
+function updateTrackerStats(p){
+  const total=(p.data.minutes||[]).reduce((a,b)=>a+b,0);
+  const fill=document.getElementById('tFill_'+p.id);
+  const totEl=document.getElementById('tTotal_'+p.id);
+  if(fill)fill.style.height=Math.min(total/600,1)*100+'%';
+  if(totEl)totEl.textContent=total;
+
+  const rDiv=document.getElementById('tRewards_'+p.id);
+  if(rDiv){
+    rDiv.innerHTML='';
+    (p.data.rewards||[]).slice().reverse().forEach(r=>{
+      const achieved=total>=r.mins;
+      const row=document.createElement('div');
+      row.className='reward-row'+(achieved?' achieved':'');
+      row.innerHTML=`<span class="reward-mins">${r.mins}</span><span class="reward-text">${r.icon} ${r.label}</span><input type="checkbox" class="reward-cb" ${achieved?'checked':''} disabled>`;
+      rDiv.appendChild(row);
+    });
+  }
+
+  let done=0;
+  for(let i=0;i<10;i++){if((p.data.minutes||[])[i]>=15&&(p.data.cert||[])[i])done++;}
+  const mc=document.getElementById('tMcount_'+p.id);
+  if(mc)mc.textContent='10일 미션 진행 '+done+' / 10';
+
+  const dotsEl=document.getElementById('tDots_'+p.id);
+  if(dotsEl){
+    dotsEl.innerHTML='';
+    for(let i=0;i<10;i++){
+      const dot=document.createElement('div');
+      dot.className='mdot'+((p.data.minutes||[])[i]>=15&&(p.data.cert||[])[i]?' done':'');
+      dotsEl.appendChild(dot);
+    }
+  }
+
+  const st=document.getElementById('tStatus_'+p.id);
+  if(st){
+    const todayDone=(p.data.minutes||[])[0]>=15&&(p.data.cert||[])[0];
+    st.textContent=todayDone?'오늘 미션 완료! ✓':'15분 이상 + 인증 체크 시 미션 완료!';
+    st.style.color=todayDone?'var(--green)':'var(--brown2)';
+  }
+}
+
+function loadTrackerMemo(p){
+  const el=document.getElementById('tMemo_'+p.id);
+  if(el)el.value=(p.data.memos||[])[currentTrackerDay]||'';
+}
+
+function copyTrackerRecord(pid){
+  const p=projects.find(x=>x.id===pid);if(!p)return;
+  const start=new Date(p.data.startDate||'2026-06-11');
+  const d=new Date(start);d.setDate(start.getDate()+currentTrackerDay);
+  const fmt=dt=>(dt.getMonth()+1)+'/'+dt.getDate();
+  const text=`📚 ${fmt(d)} 공부방 기록\n⏱ 정리 시간: ${(p.data.minutes||[])[currentTrackerDay]||0}분\n📝 내역: ${(p.data.memos||[])[currentTrackerDay]||'(없음)'}\n\n#작심10일 #${p.name}`;
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>alert('복사됐어요! 붙여넣기 하세요 😊'));}
+  else{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('복사됐어요!');}
+}
+
+// ── 트래커 설정 패널 ──
+function renderTrackerSettings(p){
+  const wrap=document.getElementById('dp-tracker-set');
+  if(!wrap)return;
+  wrap.innerHTML=`
+    <div class="section-title">기본 설정</div>
+    <div class="settings-section" style="margin-bottom:16px;">
+      <div class="settings-row">
+        <div><div class="settings-row-label">트래커 제목</div></div>
+        <input type="text" id="ts-title" value="${p.data.title||p.name}" style="width:160px;text-align:right;background:transparent;border:none;font-size:13px;color:var(--text);">
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">시작 날짜</div></div>
+        <input type="date" id="ts-date" value="${p.data.startDate||'2026-06-11'}" style="background:transparent;border:none;font-size:13px;color:var(--text);">
+      </div>
+    </div>
+    <div class="section-title">리워드 목표 편집</div>
+    <div id="ts-rewards" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+    <button class="btn btn-primary" style="width:100%;" onclick="saveTrackerSettings('${p.id}')">설정 저장</button>`;
+
+  const rDiv=document.getElementById('ts-rewards');
+  (p.data.rewards||[]).forEach((r,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;';
+    row.innerHTML=`
+      <input type="text" value="${r.icon}" id="ri_icon_${i}" style="width:36px;text-align:center;font-size:16px;">
+      <input type="number" value="${r.mins}" id="ri_mins_${i}" style="width:60px;">
+      <input type="text" value="${r.label}" id="ri_label_${i}" style="flex:1;">`;
+    rDiv.appendChild(row);
+  });
+}
+
+function saveTrackerSettings(pid){
+  const p=projects.find(x=>x.id===pid);if(!p)return;
+  const title=document.getElementById('ts-title');
+  const date=document.getElementById('ts-date');
+  if(title)p.data.title=title.value;
+  if(date)p.data.startDate=date.value;
+  const rewards=[];
+  (p.data.rewards||[]).forEach((_,i)=>{
+    const icon=document.getElementById('ri_icon_'+i);
+    const mins=document.getElementById('ri_mins_'+i);
+    const label=document.getElementById('ri_label_'+i);
+    if(icon&&mins&&label) rewards.push({icon:icon.value,mins:parseInt(mins.value)||0,label:label.value});
+  });
+  p.data.rewards=rewards;
+  p.name=title?title.value:p.name;
+  saveProjects();
+  renderTrackerMain(p);
+  alert('저장됐어요! ✅');
+}
+
+// ── 체크리스트 ──
+function renderChecklist(p){
+  const wrap=document.getElementById('dp-checklist-main');
+  if(!wrap)return;
+  if(!p.data.items)p.data.items=[];
+  const done=p.data.items.filter(it=>it.done).length;
+  const total=p.data.items.length;
+  wrap.innerHTML=`
+    <div class="progress-card" style="margin-bottom:14px;">
+      <div class="progress-label-row"><span>${done} / ${total} 완료</span><span style="color:${p.color};font-weight:700;">${total?Math.round(done/total*100):0}%</span></div>
+      <div class="progress-bg"><div class="progress-fill" style="width:${total?Math.round(done/total*100):0}%;background:${p.color};"></div></div>
+    </div>
+    <div id="checklistItems"></div>
+    <div class="add-item-row" style="margin-top:12px;">
+      <input type="text" id="newItemInput" placeholder="새 항목 추가..." onkeydown="if(event.key==='Enter')addCheckItem('${p.id}')">
+      <button class="btn btn-primary" onclick="addCheckItem('${p.id}')">추가</button>
+    </div>`;
+  const itemsDiv=document.getElementById('checklistItems');
+  p.data.items.forEach((it,i)=>{
+    const row=document.createElement('div');
+    row.className='checklist-item'+(it.done?' done-item':'');
+    row.innerHTML=`
+      <input type="checkbox" class="checklist-cb" ${it.done?'checked':''} onchange="toggleCheckItem('${p.id}',${i},this.checked)">
+      <span class="checklist-text${it.done?' done-text':''}">${it.text}</span>
+      <button class="checklist-del" onclick="deleteCheckItem('${p.id}',${i})">✕</button>`;
+    itemsDiv.appendChild(row);
+  });
+}
+
+function addCheckItem(pid){
+  const p=projects.find(x=>x.id===pid);if(!p)return;
+  const inp=document.getElementById('newItemInput');
+  if(!inp||!inp.value.trim())return;
+  if(!p.data.items)p.data.items=[];
+  p.data.items.push({text:inp.value.trim(),done:false});
+  inp.value='';
+  saveProjects();
+  renderChecklist(p);
+}
+
+function toggleCheckItem(pid,i,val){
+  const p=projects.find(x=>x.id===pid);if(!p)return;
+  p.data.items[i].done=val;
+  saveProjects();
+  renderChecklist(p);
+}
+
+function deleteCheckItem(pid,i){
+  const p=projects.find(x=>x.id===pid);if(!p)return;
+  p.data.items.splice(i,1);
+  saveProjects();
+  renderChecklist(p);
+}
+
+// ══════════════════════════════
+// 프로젝트 추가/편집
+// ══════════════════════════════
+let selectedType='calendar';
+let selectedColor='#1D9E75';
+
+function openAddProject(){
+  editingProjectId=null;
+  selectedType='calendar';
+  selectedColor='#1D9E75';
+  document.getElementById('mp-name').value='';
+  document.getElementById('modalProjectTitle').textContent='새 프로젝트';
+  document.querySelectorAll('.type-option').forEach(el=>el.classList.toggle('selected',el.dataset.type===selectedType));
+  document.querySelectorAll('.color-opt').forEach(el=>el.style.border='3px solid '+(el.dataset.color===selectedColor?el.dataset.color:'transparent'));
+  openModal('modalProject');
+}
+
+function selectType(t){
+  selectedType=t;
+  document.querySelectorAll('.type-option').forEach(el=>el.classList.toggle('selected',el.dataset.type===t));
+}
+
+function selectColor(c){
+  selectedColor=c;
+  document.querySelectorAll('.color-opt').forEach(el=>el.style.border='3px solid '+(el.dataset.color===c?c:'transparent'));
+}
+
+function saveProject(){
+  const name=document.getElementById('mp-name').value.trim();
+  if(!name){alert('이름을 입력해주세요!');return;}
+  const id='proj_'+Date.now();
+  const newP={id,name,type:selectedType,color:selectedColor,createdAt:new Date().toISOString().slice(0,10),data:{}};
+  if(selectedType==='calendar') newP.data={schedule:{},checked:{}};
+  if(selectedType==='tracker') newP.data={startDate:new Date(2026,5,11).toISOString().slice(0,10),title:name,minutes:Array(10).fill(0),am:Array(10).fill(false),cert:Array(10).fill(false),memos:Array(10).fill(''),rewards:[{mins:150,icon:'🎉',label:'목표 1'},{mins:300,icon:'⭐',label:'목표 2'},{mins:450,icon:'🏆',label:'목표 3'},{mins:600,icon:'🎁',label:'최종 목표'}]};
+  if(selectedType==='checklist') newP.data={items:[]};
+  projects.push(newP);
+  saveProjects();
+  closeModal('modalProject');
+  renderHome();
+}
+
+// ══════════════════════════════
+// 설정 페이지
+// ══════════════════════════════
+function renderSettingsPage(){
+  const list=document.getElementById('settingsProjectList');
+  list.innerHTML='';
+  projects.forEach(p=>{
+    const card=document.createElement('div');
+    card.className='settings-section';
+    card.style.marginBottom='10px';
+    card.innerHTML=`
+      <div class="settings-row">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:12px;height:12px;border-radius:50%;background:${p.color};flex-shrink:0;"></div>
+          <div>
+            <div class="settings-row-label">${p.name}</div>
+            <div class="settings-row-sub">${typeLabel(p.type)}</div>
+          </div>
+        </div>
+        <button class="btn btn-danger" style="font-size:11px;padding:5px 10px;" onclick="deleteProject('${p.id}')">삭제</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function deleteProject(id){
+  if(!confirm('이 프로젝트를 삭제할까요?'))return;
+  projects=projects.filter(p=>p.id!==id);
+  saveProjects();
+  renderSettingsPage();
+  renderHome();
+}
+
+function openResetModal(){openModal('modalReset');}
+function resetAll(){
+  localStorage.clear();
+  location.reload();
+}
+
+// ══════════════════════════════
+// 모달 헬퍼
+// ══════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+
+// ══════════════════════════════
+// 초기화
+// ══════════════════════════════
+updateGreeting();
+renderHome();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
